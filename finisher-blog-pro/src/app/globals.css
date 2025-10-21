@@ -28,6 +28,10 @@ body {
     @apply relative px-6 py-3 bg-transparent border-2 border-blue-400 rounded-lg text-blue-400 font-semibold transition-all duration-300 hover:bg-blue-400 hover:text-black hover:shadow-lg hover:shadow-blue-400/50;
   }
   
+  .neon-button-sm {
+    @apply relative px-3 py-1.5 bg-transparent border border-blue-400 rounded-md text-blue-400 font-medium text-sm transition-all duration-300 hover:bg-blue-400 hover:text-black hover:shadow-md hover:shadow-blue-400/50;
+  }
+  
   .gradient-text {
     @apply bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent;
   }
