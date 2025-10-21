@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, X, Eye, EyeOff, Trash2, Link } from 'lucide-react';
+import { X, Eye, EyeOff, Trash2, Link, Image as ImageIcon } from 'lucide-react';
 import { Control, UseFormRegister, FieldErrors } from 'react-hook-form';
-import { uploadImage } from '@/lib/blogService';
 
 interface AdminTopicEditorProps {
   index: number;
@@ -15,66 +14,25 @@ interface AdminTopicEditorProps {
   canRemove: boolean;
 }
 
-const AdminTopicEditor = ({ 
-  index, 
-  register, 
-  control, 
-  errors, 
-  onRemove, 
-  canRemove 
+const AdminTopicEditor = ({
+  index,
+  register,
+  control,
+  errors,
+  onRemove,
+  canRemove,
 }: AdminTopicEditorProps) => {
-  const [imagePreview, setImagePreview] = useState('');
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
   const [buttonEnabled, setButtonEnabled] = useState(false);
-  
-  // Initialize button enabled state from form data
-  useEffect(() => {
-    const checkButtonState = () => {
-      const input = document.querySelector(`input[name="topics.${index}.buttonEnabled"]`) as HTMLInputElement;
-      if (input && input.value) {
-        setButtonEnabled(input.value === 'true');
-      }
-    };
-    
-    // Check initial state and set up observer
-    checkButtonState();
-    const interval = setInterval(checkButtonState, 100);
-    
-    return () => clearInterval(interval);
-  }, [index]);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImagePreview(URL.createObjectURL(file));
-    setUploadingImage(true);
-
-    try {
-      const imageUrl = await uploadImage(file, `blogs/topics/${Date.now()}_${file.name}`);
-      // Update the form value through register
-      const input = document.querySelector(`input[name="topics.${index}.image"]`) as HTMLInputElement;
-      if (input) {
-        input.value = imageUrl;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-    } catch (error) {
-      console.error('Error uploading topic image:', error);
-    } finally {
-      setUploadingImage(false);
-    }
-  };
 
   const removeImage = () => {
-    setImagePreview('');
-    const input = document.querySelector(`input[name="topics.${index}.image"]`) as HTMLInputElement;
+    setImageUrl('');
+    const input = document.querySelector(
+      `input[name="topics.${index}.image"]`
+    ) as HTMLInputElement;
     if (input) {
       input.value = '';
       input.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-    if (fileRef.current) {
-      fileRef.current.value = '';
     }
   };
 
@@ -109,59 +67,52 @@ const AdminTopicEditor = ({
           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
           placeholder="Enter topic title"
         />
-        {errors.topics && Array.isArray(errors.topics) && errors.topics[index]?.title && (
-          <p className="text-red-400 text-sm mt-1">{errors.topics[index]?.title?.message}</p>
-        )}
+        {errors.topics &&
+          Array.isArray(errors.topics) &&
+          errors.topics[index]?.title && (
+            <p className="text-red-400 text-sm mt-1">
+              {errors.topics[index]?.title?.message}
+            </p>
+          )}
       </div>
 
-      {/* Topic Image */}
+      {/* Topic Image (via URL) */}
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-2">
-          Topic Image (Optional)
+          Topic Image URL (Optional)
         </label>
-        
-        {imagePreview ? (
-          <div className="relative">
-            <img
-              src={imagePreview}
-              alt="Topic preview"
-              className="w-full h-48 object-cover rounded-lg"
-            />
-            <button
-              type="button"
-              onClick={removeImage}
-              className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
-            >
-              <X size={16} />
-            </button>
-            {uploadingImage && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
-                <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-              </div>
-            )}
-          </div>
-        ) : (
-          <div
-            onClick={() => fileRef.current?.click()}
-            className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 transition-colors duration-200"
-          >
-            <Upload size={32} className="mx-auto text-gray-400 mb-2" />
-            <p className="text-gray-300 text-sm">Click to upload image</p>
-          </div>
-        )}
-        
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="hidden"
-        />
-        
-        <input
-          {...register(`topics.${index}.image`)}
-          type="hidden"
-        />
+        <div className="flex flex-col space-y-3">
+          <input
+            {...register(`topics.${index}.image`)}
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+            placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+            onChange={(e) => setImageUrl(e.target.value)}
+          />
+
+          {imageUrl && (
+            <div className="relative mt-2">
+              <img
+                src={imageUrl}
+                alt="Topic preview"
+                className="w-full h-48 object-cover rounded-lg"
+              />
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+
+          {!imageUrl && (
+            <div className="border border-dashed border-white/20 rounded-lg p-6 text-center text-gray-400">
+              <ImageIcon size={28} className="mx-auto mb-2 opacity-60" />
+              <p>Enter a valid image URL above to preview</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Topic Content */}
@@ -175,9 +126,13 @@ const AdminTopicEditor = ({
           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none"
           placeholder="Enter topic content (HTML supported)"
         />
-        {errors.topics && Array.isArray(errors.topics) && errors.topics[index]?.content && (
-          <p className="text-red-400 text-sm mt-1">{errors.topics[index]?.content?.message}</p>
-        )}
+        {errors.topics &&
+          Array.isArray(errors.topics) &&
+          errors.topics[index]?.content && (
+            <p className="text-red-400 text-sm mt-1">
+              {errors.topics[index]?.content?.message}
+            </p>
+          )}
         <p className="text-gray-500 text-sm mt-1">
           You can use HTML tags for formatting (e.g., &lt;b&gt;, &lt;i&gt;, &lt;ul&gt;, &lt;li&gt;)
         </p>
@@ -194,16 +149,17 @@ const AdminTopicEditor = ({
             onClick={() => {
               const newState = !buttonEnabled;
               setButtonEnabled(newState);
-              // Update the hidden input
-              const input = document.querySelector(`input[name="topics.${index}.buttonEnabled"]`) as HTMLInputElement;
+              const input = document.querySelector(
+                `input[name="topics.${index}.buttonEnabled"]`
+              ) as HTMLInputElement;
               if (input) {
                 input.value = newState.toString();
                 input.dispatchEvent(new Event('input', { bubbles: true }));
               }
             }}
             className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
-              buttonEnabled 
-                ? 'bg-blue-500/20 text-blue-400 border border-blue-400/50' 
+              buttonEnabled
+                ? 'bg-blue-500/20 text-blue-400 border border-blue-400/50'
                 : 'bg-gray-500/20 text-gray-400 border border-gray-400/50'
             }`}
           >
@@ -241,7 +197,10 @@ const AdminTopicEditor = ({
                   className="w-full px-4 py-3 pl-10 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                   placeholder="https://example.com"
                 />
-                <Link size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Link
+                  size={16}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                />
               </div>
             </div>
           </div>
