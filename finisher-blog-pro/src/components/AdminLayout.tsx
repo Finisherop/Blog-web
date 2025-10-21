@@ -1,157 +1,259 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  LayoutDashboard, 
-  FileText, 
-  Plus, 
-  BarChart3, 
-  LogOut,
-  Menu,
-  X
-} from 'lucide-react';
-import { onAuthStateChange, signOutUser } from '@/lib/auth';
-import Loader from './Loader';
+import { Upload, X, Eye, EyeOff, Trash2, Link } from 'lucide-react';
+import { Control, UseFormRegister, FieldErrors } from 'react-hook-form';
+import { uploadImage } from '@/lib/blogService';
 
-interface AdminLayoutProps {
-  children: React.ReactNode;
-  title: string;
+interface AdminTopicEditorProps {
+index: number;
+register: UseFormRegister<any>;
+control: Control<any>;
+errors: FieldErrors<any>;
+onRemove: () => void;
+canRemove: boolean;
 }
 
-const AdminLayout = ({ children, title }: AdminLayoutProps) => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const router = useRouter();
+const AdminTopicEditor = ({
+index,
+register,
+control,
+errors,
+onRemove,
+canRemove
+}: AdminTopicEditorProps) => {
+const [imagePreview, setImagePreview] = useState('');
+const [uploadingImage, setUploadingImage] = useState(false);
+const [buttonEnabled, setButtonEnabled] = useState(false);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChange((user) => {
-      if (user) {
-        setUser(user);
-      } else {
-        router.push('/admin/login');
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [router]);
-
-  const handleSignOut = async () => {
-    await signOutUser();
-    router.push('/admin/login');
-  };
-
-  if (loading) {
-    return <Loader />;
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  const navigation = [
-    { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'All Blogs', href: '/admin/blogs', icon: FileText },
-    { name: 'Create Blog', href: '/admin/blogs/create', icon: Plus },
-    { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-  ];
-
-  return (
-    <div className="min-h-screen bg-black">
-      {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 glass-card border-r border-white/10 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">F</span>
-            </div>
-            <span className="text-lg font-bold gradient-text">Admin Panel</span>
-          </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-gray-400 hover:text-white"
-          >
-            <X size={24} />
-          </button>
-        </div>
-
-        <nav className="mt-6 px-4">
-          <ul className="space-y-2">
-            {navigation.map((item) => (
-              <li key={item.name}>
-                <Link
-                  href={item.href}
-                  className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-white/10 hover:text-white transition-all duration-200 group"
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <item.icon size={20} className="group-hover:text-blue-400 transition-colors duration-200" />
-                  <span>{item.name}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
-          <button
-            onClick={handleSignOut}
-            className="flex items-center space-x-3 w-full px-4 py-3 text-gray-300 rounded-lg hover:bg-red-500/20 hover:text-red-300 transition-all duration-200"
-          >
-            <LogOut size={20} />
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="lg:pl-64">
-        {/* Top bar */}
-        <div className="glass-card border-b border-white/10 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden text-gray-400 hover:text-white"
-              >
-                <Menu size={24} />
-              </button>
-              <h1 className="text-2xl font-bold text-white">{title}</h1>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-300">Welcome, {user.email}</span>
-              <Link
-                href="/"
-                target="_blank"
-                className="text-blue-400 hover:text-blue-300 transition-colors duration-200"
-              >
-                View Site
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Page content */}
-        <main className="p-6">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
+// Initialize button enabled state from form data
+useEffect(() => {
+const checkButtonState = () => {
+const input = document.querySelector(input[name="topics.${index}.buttonEnabled"]) as HTMLInputElement;
+if (input && input.value) {
+setButtonEnabled(input.value === 'true');
+}
 };
 
-export default AdminLayout;
+// Check initial state and set up observer  
+checkButtonState();  
+const interval = setInterval(checkButtonState, 100);  
+
+return () => clearInterval(interval);
+
+}, [index]);
+const fileRef = useRef<HTMLInputElement>(null);
+
+const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+const file = e.target.files?.[0];
+if (!file) return;
+
+setImagePreview(URL.createObjectURL(file));  
+setUploadingImage(true);  
+
+try {  
+  const imageUrl = await uploadImage(file, `blogs/topics/${Date.now()}_${file.name}`);  
+  // Update the form value through register  
+  const input = document.querySelector(`input[name="topics.${index}.image"]`) as HTMLInputElement;  
+  if (input) {  
+    input.value = imageUrl;  
+    input.dispatchEvent(new Event('input', { bubbles: true }));  
+  }  
+} catch (error) {  
+  console.error('Error uploading topic image:', error);  
+} finally {  
+  setUploadingImage(false);  
+}
+
+};
+
+const removeImage = () => {
+setImagePreview('');
+const input = document.querySelector(input[name="topics.${index}.image"]) as HTMLInputElement;
+if (input) {
+input.value = '';
+input.dispatchEvent(new Event('input', { bubbles: true }));
+}
+if (fileRef.current) {
+fileRef.current.value = '';
+}
+};
+
+return (
+<motion.div
+initial={{ opacity: 0, y: 20 }}
+animate={{ opacity: 1, y: 0 }}
+exit={{ opacity: 0, y: -20 }}
+className="border border-white/10 rounded-lg p-6 space-y-6"
+>
+{/* Topic Header */}
+<div className="flex items-center justify-between">
+<h3 className="text-lg font-semibold text-white">Topic {index + 1}</h3>
+{canRemove && (
+<button  
+type="button"  
+onClick={onRemove}  
+className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-all duration-200"  
+>
+<Trash2 size={20} />
+</button>
+)}
+</div>
+
+{/* Topic Title */}  
+  <div>  
+    <label className="block text-sm font-medium text-gray-300 mb-2">  
+      Topic Title *  
+    </label>  
+    <input  
+      {...register(`topics.${index}.title`)}  
+      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"  
+      placeholder="Enter topic title"  
+    />  
+    {errors.topics && Array.isArray(errors.topics) && errors.topics[index]?.title && (  
+      <p className="text-red-400 text-sm mt-1">{errors.topics[index]?.title?.message}</p>  
+    )}  
+  </div>  
+
+  {/* Topic Image */}  
+  <div>  
+    <label className="block text-sm font-medium text-gray-300 mb-2">  
+      Topic Image (Optional)  
+    </label>  
+
+    {imagePreview ? (  
+      <div className="relative">  
+        <img  
+          src={imagePreview}  
+          alt="Topic preview"  
+          className="w-full h-48 object-cover rounded-lg"  
+        />  
+        <button  
+          type="button"  
+          onClick={removeImage}  
+          className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"  
+        >  
+          <X size={16} />  
+        </button>  
+        {uploadingImage && (  
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">  
+            <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />  
+          </div>  
+        )}  
+      </div>  
+    ) : (  
+      <div  
+        onClick={() => fileRef.current?.click()}  
+        className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 transition-colors duration-200"  
+      >  
+        <Upload size={32} className="mx-auto text-gray-400 mb-2" />  
+        <p className="text-gray-300 text-sm">Click to upload image</p>  
+      </div>  
+    )}  
+
+    <input  
+      ref={fileRef}  
+      type="file"  
+      accept="image/*"  
+      onChange={handleImageChange}  
+      className="hidden"  
+    />  
+
+    <input  
+      {...register(`topics.${index}.image`)}  
+      type="hidden"  
+    />  
+  </div>  
+
+  {/* Topic Content */}  
+  <div>  
+    <label className="block text-sm font-medium text-gray-300 mb-2">  
+      Topic Content *  
+    </label>  
+    <textarea  
+      {...register(`topics.${index}.content`)}  
+      rows={6}  
+      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none"  
+      placeholder="Enter topic content (HTML supported)"  
+    />  
+    {errors.topics && Array.isArray(errors.topics) && errors.topics[index]?.content && (  
+      <p className="text-red-400 text-sm mt-1">{errors.topics[index]?.content?.message}</p>  
+    )}  
+    <p className="text-gray-500 text-sm mt-1">  
+      You can use HTML tags for formatting (e.g., &lt;b&gt;, &lt;i&gt;, &lt;ul&gt;, &lt;li&gt;)  
+    </p>  
+  </div>  
+
+  {/* CTR Button Settings */}  
+  <div className="border-t border-white/10 pt-6">  
+    <div className="flex items-center justify-between mb-4">  
+      <label className="text-sm font-medium text-gray-300">  
+        Call-to-Action Button  
+      </label>  
+      <button  
+        type="button"  
+        onClick={() => {  
+          const newState = !buttonEnabled;  
+          setButtonEnabled(newState);  
+          // Update the hidden input  
+          const input = document.querySelector(`input[name="topics.${index}.buttonEnabled"]`) as HTMLInputElement;  
+          if (input) {  
+            input.value = newState.toString();  
+            input.dispatchEvent(new Event('input', { bubbles: true }));  
+          }  
+        }}  
+        className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${  
+          buttonEnabled   
+            ? 'bg-blue-500/20 text-blue-400 border border-blue-400/50'   
+            : 'bg-gray-500/20 text-gray-400 border border-gray-400/50'  
+        }`}  
+      >  
+        {buttonEnabled ? <Eye size={16} /> : <EyeOff size={16} />}  
+        <span>{buttonEnabled ? 'Enabled' : 'Disabled'}</span>  
+      </button>  
+    </div>  
+
+    <input  
+      {...register(`topics.${index}.buttonEnabled`)}  
+      type="hidden"  
+      value={buttonEnabled.toString()}  
+    />  
+
+    {buttonEnabled && (  
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">  
+        <div>  
+          <label className="block text-sm font-medium text-gray-300 mb-2">  
+            Button Text  
+          </label>  
+          <input  
+            {...register(`topics.${index}.buttonText`)}  
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"  
+            placeholder="e.g., Learn More"  
+          />  
+        </div>  
+
+        <div>  
+          <label className="block text-sm font-medium text-gray-300 mb-2">  
+            Button Link  
+          </label>  
+          <div className="relative">  
+            <input  
+              {...register(`topics.${index}.buttonLink`)}  
+              className="w-full px-4 py-3 pl-10 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"  
+              placeholder="https://example.com"  
+            />  
+            <Link size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />  
+          </div>  
+        </div>  
+      </div>  
+    )}  
+  </div>  
+</motion.div>
+
+);
+};
+
+export default AdminTopicEditor;
+
+
