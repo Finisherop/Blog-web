@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, X, Plus, Save, Eye, EyeOff } from 'lucide-react';
+import { Link, X, Plus, Save, Eye, EyeOff } from 'lucide-react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { CreateBlogData, BlogTopic } from '@/types/blog';
-import { uploadImage, generateSlug } from '@/lib/blogService';
+import { generateSlug } from '@/lib/blogService';
 import AdminTopicEditor from './AdminTopicEditor';
 
 const blogSchema = z.object({
@@ -40,10 +40,7 @@ const AdminBlogForm = ({
   loading = false,
   submitText = 'Create Blog'
 }: AdminBlogFormProps) => {
-  const [headerImageFile, setHeaderImageFile] = useState<File | null>(null);
   const [headerImagePreview, setHeaderImagePreview] = useState(initialData?.headerImage || '');
-  const [uploadingHeader, setUploadingHeader] = useState(false);
-  const headerFileRef = useRef<HTMLInputElement>(null);
 
   const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<BlogFormData>({
     resolver: zodResolver(blogSchema),
@@ -70,31 +67,15 @@ const AdminBlogForm = ({
 
   const watchTitle = watch('title');
 
-  const handleHeaderImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setHeaderImageFile(file);
-    setHeaderImagePreview(URL.createObjectURL(file));
-    setUploadingHeader(true);
-
-    try {
-      const imageUrl = await uploadImage(file, `blogs/headers/${Date.now()}_${file.name}`);
-      setValue('headerImage', imageUrl);
-    } catch (error) {
-      console.error('Error uploading header image:', error);
-    } finally {
-      setUploadingHeader(false);
-    }
+  const handleHeaderImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setValue('headerImage', url);
+    setHeaderImagePreview(url);
   };
 
   const removeHeaderImage = () => {
-    setHeaderImageFile(null);
     setHeaderImagePreview('');
     setValue('headerImage', '');
-    if (headerFileRef.current) {
-      headerFileRef.current.value = '';
-    }
   };
 
   const addTopic = () => {
@@ -178,48 +159,43 @@ const AdminBlogForm = ({
       <div className="glass-card p-6">
         <h2 className="text-xl font-bold text-white mb-6">Header Image</h2>
         
-        {headerImagePreview ? (
-          <div className="relative">
-            <img
-              src={headerImagePreview}
-              alt="Header preview"
-              className="w-full h-64 object-cover rounded-lg"
-            />
-            <button
-              type="button"
-              onClick={removeHeaderImage}
-              className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
-            >
-              <X size={16} />
-            </button>
-            {uploadingHeader && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
-                <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-              </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Image URL *
+            </label>
+            <div className="relative">
+              <input
+                {...register('headerImage')}
+                onChange={handleHeaderImageUrlChange}
+                className="w-full px-4 py-3 pl-10 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                placeholder="https://example.com/image.jpg"
+              />
+              <Link size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            </div>
+            {errors.headerImage && (
+              <p className="text-red-400 text-sm mt-1">{errors.headerImage.message}</p>
             )}
           </div>
-        ) : (
-          <div
-            onClick={() => headerFileRef.current?.click()}
-            className="border-2 border-dashed border-white/20 rounded-lg p-12 text-center cursor-pointer hover:border-blue-400 transition-colors duration-200"
-          >
-            <Upload size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-300 mb-2">Click to upload header image</p>
-            <p className="text-gray-500 text-sm">PNG, JPG up to 10MB</p>
-          </div>
-        )}
-        
-        <input
-          ref={headerFileRef}
-          type="file"
-          accept="image/*"
-          onChange={handleHeaderImageChange}
-          className="hidden"
-        />
-        
-        {errors.headerImage && (
-          <p className="text-red-400 text-sm mt-2">{errors.headerImage.message}</p>
-        )}
+          
+          {headerImagePreview && (
+            <div className="relative">
+              <img
+                src={headerImagePreview}
+                alt="Header preview"
+                className="w-full h-64 object-cover rounded-lg"
+                onError={() => setHeaderImagePreview('')}
+              />
+              <button
+                type="button"
+                onClick={removeHeaderImage}
+                className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Topics */}

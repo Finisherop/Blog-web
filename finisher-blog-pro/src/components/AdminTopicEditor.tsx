@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, X, Eye, EyeOff, Trash2, Link } from 'lucide-react';
+import { X, Eye, EyeOff, Trash2, Link } from 'lucide-react';
 import { Control, UseFormRegister, FieldErrors } from 'react-hook-form';
-import { uploadImage } from '@/lib/blogService';
 
 interface AdminTopicEditorProps {
   index: number;
@@ -24,7 +23,6 @@ const AdminTopicEditor = ({
   canRemove 
 }: AdminTopicEditorProps) => {
   const [imagePreview, setImagePreview] = useState('');
-  const [uploadingImage, setUploadingImage] = useState(false);
   const [buttonEnabled, setButtonEnabled] = useState(false);
   
   // Initialize button enabled state from form data
@@ -42,27 +40,15 @@ const AdminTopicEditor = ({
     
     return () => clearInterval(interval);
   }, [index]);
-  const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImagePreview(URL.createObjectURL(file));
-    setUploadingImage(true);
-
-    try {
-      const imageUrl = await uploadImage(file, `blogs/topics/${Date.now()}_${file.name}`);
-      // Update the form value through register
-      const input = document.querySelector(`input[name="topics.${index}.image"]`) as HTMLInputElement;
-      if (input) {
-        input.value = imageUrl;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-    } catch (error) {
-      console.error('Error uploading topic image:', error);
-    } finally {
-      setUploadingImage(false);
+  const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setImagePreview(url);
+    // Update the hidden input value
+    const hiddenInput = document.querySelector(`input[name="topics.${index}.image"]`) as HTMLInputElement;
+    if (hiddenInput) {
+      hiddenInput.value = url;
+      hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
   };
 
@@ -73,8 +59,10 @@ const AdminTopicEditor = ({
       input.value = '';
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
-    if (fileRef.current) {
-      fileRef.current.value = '';
+    // Also clear the URL input field
+    const urlInput = document.querySelector(`input[name="topics.${index}.imageUrl"]`) as HTMLInputElement;
+    if (urlInput) {
+      urlInput.value = '';
     }
   };
 
@@ -120,43 +108,35 @@ const AdminTopicEditor = ({
           Topic Image (Optional)
         </label>
         
-        {imagePreview ? (
+        <div className="space-y-4">
           <div className="relative">
-            <img
-              src={imagePreview}
-              alt="Topic preview"
-              className="w-full h-48 object-cover rounded-lg"
+            <input
+              name={`topics.${index}.imageUrl`}
+              onChange={handleImageUrlChange}
+              className="w-full px-4 py-3 pl-10 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+              placeholder="https://example.com/image.jpg"
             />
-            <button
-              type="button"
-              onClick={removeImage}
-              className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
-            >
-              <X size={16} />
-            </button>
-            {uploadingImage && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
-                <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-              </div>
-            )}
+            <Link size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
-        ) : (
-          <div
-            onClick={() => fileRef.current?.click()}
-            className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 transition-colors duration-200"
-          >
-            <Upload size={32} className="mx-auto text-gray-400 mb-2" />
-            <p className="text-gray-300 text-sm">Click to upload image</p>
-          </div>
-        )}
-        
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="hidden"
-        />
+          
+          {imagePreview && (
+            <div className="relative">
+              <img
+                src={imagePreview}
+                alt="Topic preview"
+                className="w-full h-48 object-cover rounded-lg"
+                onError={() => setImagePreview('')}
+              />
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+        </div>
         
         <input
           {...register(`topics.${index}.image`)}
