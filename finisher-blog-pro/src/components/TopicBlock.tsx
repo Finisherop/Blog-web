@@ -1,10 +1,10 @@
 'use client';
 
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 import { BlogTopic } from '@/types/blog';
 import { trackCTRClick } from '@/lib/analytics';
+import ImageWithFallback from './ImageWithFallback';
 
 interface TopicBlockProps {
   topic: BlogTopic;
@@ -31,8 +31,8 @@ const TopicBlock = ({ topic, blogId, index }: TopicBlockProps) => {
       <article className="glass-card p-8 md:p-12 hover:shadow-2xl hover:shadow-blue-400/20 transition-all duration-500 border border-white/10">
         {/* Topic Image */}
         {topic.image && (
-          <div className="relative h-80 mb-8 rounded-xl overflow-hidden shadow-2xl">
-            <Image
+          <div className="relative h-80 mb-8 rounded-xl overflow-hidden shadow-2xl bg-gray-800">
+            <ImageWithFallback
               src={topic.image}
               alt={topic.title}
               fill

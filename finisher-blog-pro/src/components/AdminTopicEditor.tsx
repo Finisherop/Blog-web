@@ -43,6 +43,7 @@ const AdminTopicEditor = ({
 
   const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
+    console.log(`Topic ${index} image URL changed:`, url);
     setImagePreview(url);
     // Update the hidden input value
     const hiddenInput = document.querySelector(`input[name="topics.${index}.image"]`) as HTMLInputElement;

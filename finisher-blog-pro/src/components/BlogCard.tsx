@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Calendar, Eye } from 'lucide-react';
 import { Blog } from '@/types/blog';
+import ImageWithFallback from './ImageWithFallback';
 
 interface BlogCardProps {
   blog: Blog;
@@ -22,8 +22,8 @@ const BlogCard = ({ blog, index = 0 }: BlogCardProps) => {
       <Link href={`/blog/${blog.slug}`} className="block h-full">
         <article className="glass-card overflow-hidden hover:shadow-2xl hover:shadow-blue-400/30 transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-2 h-full flex flex-col border border-white/10">
           {/* Blog Image */}
-          <div className="relative h-56 overflow-hidden">
-            <Image
+          <div className="relative h-56 overflow-hidden bg-gray-800">
+            <ImageWithFallback
               src={blog.headerImage}
               alt={blog.title}
               fill

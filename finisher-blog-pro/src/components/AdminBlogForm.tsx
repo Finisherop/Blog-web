@@ -69,6 +69,7 @@ const AdminBlogForm = ({
 
   const handleHeaderImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
+    console.log('Header image URL changed:', url);
     setValue('headerImage', url);
     setHeaderImagePreview(url);
   };

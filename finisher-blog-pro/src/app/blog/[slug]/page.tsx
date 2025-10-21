@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Calendar, Eye, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import TopicBlock from '@/components/TopicBlock';
 import BlogCard from '@/components/BlogCard';
 import Loader from '@/components/Loader';
+import ImageWithFallback from '@/components/ImageWithFallback';
 import { Blog } from '@/types/blog';
 import { getBlogBySlug, getRecentBlogs } from '@/lib/blogService';
 import { trackPageView } from '@/lib/analytics';
@@ -86,8 +86,8 @@ export default function BlogPage() {
       </div>
 
       {/* Header Banner */}
-      <section className="relative h-[500px] overflow-hidden mt-8 rounded-2xl mx-4 sm:mx-6 lg:mx-8">
-        <Image
+      <section className="relative h-[500px] overflow-hidden mt-8 rounded-2xl mx-4 sm:mx-6 lg:mx-8 bg-gray-800">
+        <ImageWithFallback
           src={blog.headerImage}
           alt={blog.title}
           fill
