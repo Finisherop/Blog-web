@@ -80,7 +80,7 @@ export default function AdminLogin() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-              placeholder="admin@finisherblog.com"
+              placeholder="admin@gmail.com"
               required
             />
           </div>
@@ -127,7 +127,7 @@ export default function AdminLogin() {
 
         <div className="mt-6 text-center text-sm text-gray-400">
           <p>Default credentials for demo:</p>
-          <p className="text-blue-400">admin@finisherblog.com / admin123</p>
+          <p className="text-blue-400">admin@gmail.com / admin123</p>
         </div>
       </motion.div>
     </div>
