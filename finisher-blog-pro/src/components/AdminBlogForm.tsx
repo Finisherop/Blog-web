@@ -174,86 +174,44 @@ const AdminBlogForm = ({
         </div>
       </div>
 
-      {/* Header Image */}
-      <div className="glass-card p-6">
-        <h2 className="text-xl font-bold text-white mb-6">Header Image</h2>
-        
-        {headerImagePreview ? (
-          <div className="relative">
-            <img
-              src={headerImagePreview}
-              alt="Header preview"
-              className="w-full h-64 object-cover rounded-lg"
-            />
-            <button
-              type="button"
-              onClick={removeHeaderImage}
-              className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
-            >
-              <X size={16} />
-            </button>
-            {uploadingHeader && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
-                <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-              </div>
-            )}
-          </div>
-        ) : (
-          <div
-            onClick={() => headerFileRef.current?.click()}
-            className="border-2 border-dashed border-white/20 rounded-lg p-12 text-center cursor-pointer hover:border-blue-400 transition-colors duration-200"
-          >
-            <Upload size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-300 mb-2">Click to upload header image</p>
-            <p className="text-gray-500 text-sm">PNG, JPG up to 10MB</p>
-          </div>
-        )}
-        
-        <input
-          ref={headerFileRef}
-          type="file"
-          accept="image/*"
-          onChange={handleHeaderImageChange}
-          className="hidden"
-        />
-        
-        {errors.headerImage && (
-          <p className="text-red-400 text-sm mt-2">{errors.headerImage.message}</p>
-        )}
-      </div>
+     {/* Header Image */}
+<div className="glass-card p-6">
+  <h2 className="text-xl font-bold text-white mb-6">Header Image (URL)</h2>
 
-      {/* Topics */}
-      <div className="glass-card p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">Blog Topics</h2>
-          <button
-            type="button"
-            onClick={addTopic}
-            className="neon-button flex items-center space-x-2"
-          >
-            <Plus size={20} />
-            <span>Add Topic</span>
-          </button>
-        </div>
+  <label className="block text-sm font-medium text-gray-300 mb-2">
+    Image URL *
+  </label>
+  <input
+    {...register('headerImage')}
+    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+    placeholder="Enter direct image URL (e.g., https://example.com/image.jpg)"
+    onChange={(e) => setHeaderImagePreview(e.target.value)}
+  />
 
-        <div className="space-y-6">
-          {fields.map((field, index) => (
-            <AdminTopicEditor
-              key={field.id}
-              index={index}
-              register={register}
-              control={control}
-              errors={errors}
-              onRemove={() => remove(index)}
-              canRemove={fields.length > 1}
-            />
-          ))}
-        </div>
+  {errors.headerImage && (
+    <p className="text-red-400 text-sm mt-1">{errors.headerImage.message}</p>
+  )}
 
-        {errors.topics && (
-          <p className="text-red-400 text-sm mt-2">{errors.topics.message}</p>
-        )}
-      </div>
+  {headerImagePreview && (
+    <div className="relative mt-4">
+      <img
+        src={headerImagePreview}
+        alt="Header preview"
+        className="w-full h-64 object-cover rounded-lg"
+      />
+      <button
+        type="button"
+        onClick={() => {
+          setHeaderImagePreview('');
+          setValue('headerImage', '');
+        }}
+        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
+      >
+        <X size={16} />
+      </button>
+    </div>
+  )}
+</div>
 
       {/* Submit Button */}
       <div className="flex justify-end">
