@@ -33,8 +33,30 @@ export const signIn = async (email: string, password: string) => {
       }
     }
     
-    // For non-admin users, just try regular sign in
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    // For non-admin users, try to sign in first
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      return { user: userCredential.user, error: null };
+    } catch (signInError: any) {
+      // If user doesn't exist, create new account for regular users
+      if (signInError.code === 'auth/user-not-found' || signInError.code === 'auth/invalid-credential') {
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          return { user: userCredential.user, error: null };
+        } catch (createError: any) {
+          return { user: null, error: createError.message };
+        }
+      }
+      return { user: null, error: signInError.message };
+    }
+  } catch (error: any) {
+    return { user: null, error: error.message };
+  }
+};
+
+export const signUp = async (email: string, password: string) => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     return { user: userCredential.user, error: null };
   } catch (error: any) {
     return { user: null, error: error.message };

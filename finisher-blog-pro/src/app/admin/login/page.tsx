@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
-import { signIn, onAuthStateChange } from '@/lib/auth';
+import { signIn, onAuthStateChange, isAdmin } from '@/lib/auth';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -17,7 +17,11 @@ export default function AdminLogin() {
   useEffect(() => {
     const unsubscribe = onAuthStateChange((user) => {
       if (user) {
-        router.push('/admin/dashboard');
+        if (isAdmin(user)) {
+          router.push('/admin/dashboard');
+        } else {
+          router.push('/');
+        }
       }
     });
 
@@ -35,7 +39,11 @@ export default function AdminLogin() {
       setError(signInError);
       setLoading(false);
     } else if (user) {
-      router.push('/admin/dashboard');
+      if (isAdmin(user)) {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/');
+      }
     }
   };
 

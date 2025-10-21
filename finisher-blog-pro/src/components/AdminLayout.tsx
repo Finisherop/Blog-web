@@ -13,7 +13,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
-import { onAuthStateChange, signOutUser } from '@/lib/auth';
+import { onAuthStateChange, signOutUser, isAdmin } from '@/lib/auth';
 import Loader from './Loader';
 
 interface AdminLayoutProps {
@@ -30,7 +30,14 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChange((user) => {
       if (user) {
-        setUser(user);
+        // Check if user is admin
+        if (isAdmin(user)) {
+          setUser(user);
+        } else {
+          // Non-admin users should be redirected to homepage
+          router.push('/');
+          return;
+        }
       } else {
         router.push('/admin/login');
       }
