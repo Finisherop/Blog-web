@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Eye, EyeOff, Trash2, Link, Image as ImageIcon } from 'lucide-react';
+import { X, Eye, EyeOff, Trash2, Link } from 'lucide-react';
 import { Control, UseFormRegister, FieldErrors } from 'react-hook-form';
 
 interface AdminTopicEditorProps {
@@ -14,25 +14,55 @@ interface AdminTopicEditorProps {
   canRemove: boolean;
 }
 
-const AdminTopicEditor = ({
-  index,
-  register,
-  control,
-  errors,
-  onRemove,
-  canRemove,
+const AdminTopicEditor = ({ 
+  index, 
+  register, 
+  control, 
+  errors, 
+  onRemove, 
+  canRemove 
 }: AdminTopicEditorProps) => {
-  const [imageUrl, setImageUrl] = useState('');
+  const [imagePreview, setImagePreview] = useState('');
   const [buttonEnabled, setButtonEnabled] = useState(false);
+  
+  // Initialize button enabled state from form data
+  useEffect(() => {
+    const checkButtonState = () => {
+      const input = document.querySelector(`input[name="topics.${index}.buttonEnabled"]`) as HTMLInputElement;
+      if (input && input.value) {
+        setButtonEnabled(input.value === 'true');
+      }
+    };
+    
+    // Check initial state and set up observer
+    checkButtonState();
+    const interval = setInterval(checkButtonState, 100);
+    
+    return () => clearInterval(interval);
+  }, [index]);
+
+  const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setImagePreview(url);
+    // Update the hidden input value
+    const hiddenInput = document.querySelector(`input[name="topics.${index}.image"]`) as HTMLInputElement;
+    if (hiddenInput) {
+      hiddenInput.value = url;
+      hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  };
 
   const removeImage = () => {
-    setImageUrl('');
-    const input = document.querySelector(
-      `input[name="topics.${index}.image"]`
-    ) as HTMLInputElement;
+    setImagePreview('');
+    const input = document.querySelector(`input[name="topics.${index}.image"]`) as HTMLInputElement;
     if (input) {
       input.value = '';
       input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    // Also clear the URL input field
+    const urlInput = document.querySelector(`input[name="topics.${index}.imageUrl"]`) as HTMLInputElement;
+    if (urlInput) {
+      urlInput.value = '';
     }
   };
 
@@ -67,34 +97,35 @@ const AdminTopicEditor = ({
           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
           placeholder="Enter topic title"
         />
-        {errors.topics &&
-          Array.isArray(errors.topics) &&
-          errors.topics[index]?.title && (
-            <p className="text-red-400 text-sm mt-1">
-              {errors.topics[index]?.title?.message}
-            </p>
-          )}
+        {errors.topics && Array.isArray(errors.topics) && errors.topics[index]?.title && (
+          <p className="text-red-400 text-sm mt-1">{errors.topics[index]?.title?.message}</p>
+        )}
       </div>
 
-      {/* Topic Image (via URL) */}
+      {/* Topic Image */}
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-2">
-          Topic Image URL (Optional)
+          Topic Image (Optional)
         </label>
-        <div className="flex flex-col space-y-3">
-          <input
-            {...register(`topics.${index}.image`)}
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-            placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
-            onChange={(e) => setImageUrl(e.target.value)}
-          />
-
-          {imageUrl && (
-            <div className="relative mt-2">
+        
+        <div className="space-y-4">
+          <div className="relative">
+            <input
+              name={`topics.${index}.imageUrl`}
+              onChange={handleImageUrlChange}
+              className="w-full px-4 py-3 pl-10 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+              placeholder="https://example.com/image.jpg"
+            />
+            <Link size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </div>
+          
+          {imagePreview && (
+            <div className="relative">
               <img
-                src={imageUrl}
+                src={imagePreview}
                 alt="Topic preview"
                 className="w-full h-48 object-cover rounded-lg"
+                onError={() => setImagePreview('')}
               />
               <button
                 type="button"
@@ -105,14 +136,12 @@ const AdminTopicEditor = ({
               </button>
             </div>
           )}
-
-          {!imageUrl && (
-            <div className="border border-dashed border-white/20 rounded-lg p-6 text-center text-gray-400">
-              <ImageIcon size={28} className="mx-auto mb-2 opacity-60" />
-              <p>Enter a valid image URL above to preview</p>
-            </div>
-          )}
         </div>
+        
+        <input
+          {...register(`topics.${index}.image`)}
+          type="hidden"
+        />
       </div>
 
       {/* Topic Content */}
@@ -126,13 +155,9 @@ const AdminTopicEditor = ({
           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none"
           placeholder="Enter topic content (HTML supported)"
         />
-        {errors.topics &&
-          Array.isArray(errors.topics) &&
-          errors.topics[index]?.content && (
-            <p className="text-red-400 text-sm mt-1">
-              {errors.topics[index]?.content?.message}
-            </p>
-          )}
+        {errors.topics && Array.isArray(errors.topics) && errors.topics[index]?.content && (
+          <p className="text-red-400 text-sm mt-1">{errors.topics[index]?.content?.message}</p>
+        )}
         <p className="text-gray-500 text-sm mt-1">
           You can use HTML tags for formatting (e.g., &lt;b&gt;, &lt;i&gt;, &lt;ul&gt;, &lt;li&gt;)
         </p>
@@ -149,17 +174,16 @@ const AdminTopicEditor = ({
             onClick={() => {
               const newState = !buttonEnabled;
               setButtonEnabled(newState);
-              const input = document.querySelector(
-                `input[name="topics.${index}.buttonEnabled"]`
-              ) as HTMLInputElement;
+              // Update the hidden input
+              const input = document.querySelector(`input[name="topics.${index}.buttonEnabled"]`) as HTMLInputElement;
               if (input) {
                 input.value = newState.toString();
                 input.dispatchEvent(new Event('input', { bubbles: true }));
               }
             }}
             className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
-              buttonEnabled
-                ? 'bg-blue-500/20 text-blue-400 border border-blue-400/50'
+              buttonEnabled 
+                ? 'bg-blue-500/20 text-blue-400 border border-blue-400/50' 
                 : 'bg-gray-500/20 text-gray-400 border border-gray-400/50'
             }`}
           >
@@ -197,10 +221,7 @@ const AdminTopicEditor = ({
                   className="w-full px-4 py-3 pl-10 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                   placeholder="https://example.com"
                 />
-                <Link
-                  size={16}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                />
+                <Link size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               </div>
             </div>
           </div>

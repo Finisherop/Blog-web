@@ -11,44 +11,11 @@ import {
   limit,
   where
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { db, storage } from './firebase';
+import { db } from './firebase';
 import { Blog, CreateBlogData, BlogTopic } from '@/types/blog';
 
-export const uploadImage = async (file: File, path: string): Promise<string> => {
-  try {
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-    if (!allowedTypes.includes(file.type)) {
-      throw new Error('Invalid file type. Only JPEG, PNG, WebP, and GIF images are allowed.');
-    }
-
-    // Validate file size (10MB max)
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
-      throw new Error('File size too large. Maximum size is 10MB.');
-    }
-
-    const storageRef = ref(storage, path);
-    const snapshot = await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    
-    console.log('Image uploaded successfully:', downloadURL);
-    return downloadURL;
-  } catch (error) {
-    console.error('Error uploading image:', error);
-    throw error;
-  }
-};
-
-export const deleteImage = async (imageUrl: string) => {
-  try {
-    const imageRef = ref(storage, imageUrl);
-    await deleteObject(imageRef);
-  } catch (error) {
-    console.error('Error deleting image:', error);
-  }
-};
+// Image upload functionality has been replaced with URL input
+// Images are now provided via URLs instead of file uploads
 
 export const createBlog = async (blogData: CreateBlogData): Promise<string> => {
   const docRef = await addDoc(collection(db, 'blogs'), {
