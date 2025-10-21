@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, X, Eye, EyeOff, Trash2, Link } from 'lucide-react';
 import { Control, UseFormRegister, FieldErrors } from 'react-hook-form';
@@ -26,6 +26,22 @@ const AdminTopicEditor = ({
   const [imagePreview, setImagePreview] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [buttonEnabled, setButtonEnabled] = useState(false);
+  
+  // Initialize button enabled state from form data
+  useEffect(() => {
+    const checkButtonState = () => {
+      const input = document.querySelector(`input[name="topics.${index}.buttonEnabled"]`) as HTMLInputElement;
+      if (input && input.value) {
+        setButtonEnabled(input.value === 'true');
+      }
+    };
+    
+    // Check initial state and set up observer
+    checkButtonState();
+    const interval = setInterval(checkButtonState, 100);
+    
+    return () => clearInterval(interval);
+  }, [index]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,8 +109,8 @@ const AdminTopicEditor = ({
           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
           placeholder="Enter topic title"
         />
-        {errors.topics?.[index]?.title && (
-          <p className="text-red-400 text-sm mt-1">{(errors.topics as any)?.[index]?.title?.message}</p>
+        {errors.topics && Array.isArray(errors.topics) && errors.topics[index]?.title && (
+          <p className="text-red-400 text-sm mt-1">{errors.topics[index]?.title?.message}</p>
         )}
       </div>
 
@@ -159,8 +175,8 @@ const AdminTopicEditor = ({
           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none"
           placeholder="Enter topic content (HTML supported)"
         />
-        {errors.topics?.[index]?.content && (
-          <p className="text-red-400 text-sm mt-1">{(errors.topics as any)?.[index]?.content?.message}</p>
+        {errors.topics && Array.isArray(errors.topics) && errors.topics[index]?.content && (
+          <p className="text-red-400 text-sm mt-1">{errors.topics[index]?.content?.message}</p>
         )}
         <p className="text-gray-500 text-sm mt-1">
           You can use HTML tags for formatting (e.g., &lt;b&gt;, &lt;i&gt;, &lt;ul&gt;, &lt;li&gt;)
@@ -175,7 +191,16 @@ const AdminTopicEditor = ({
           </label>
           <button
             type="button"
-            onClick={() => setButtonEnabled(!buttonEnabled)}
+            onClick={() => {
+              const newState = !buttonEnabled;
+              setButtonEnabled(newState);
+              // Update the hidden input
+              const input = document.querySelector(`input[name="topics.${index}.buttonEnabled"]`) as HTMLInputElement;
+              if (input) {
+                input.value = newState.toString();
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+            }}
             className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
               buttonEnabled 
                 ? 'bg-blue-500/20 text-blue-400 border border-blue-400/50' 

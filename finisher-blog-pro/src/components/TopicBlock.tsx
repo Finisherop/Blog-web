@@ -15,7 +15,7 @@ interface TopicBlockProps {
 const TopicBlock = ({ topic, blogId, index }: TopicBlockProps) => {
   const handleCTRClick = async () => {
     if (topic.buttonEnabled && topic.buttonLink) {
-      await trackCTRClick(blogId);
+      await trackCTRClick(blogId, topic.id);
       window.open(topic.buttonLink, '_blank');
     }
   };

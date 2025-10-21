@@ -24,6 +24,9 @@ export const trackPageView = async (blogId: string, isUnique: boolean = false) =
   try {
     const analyticsRef = doc(db, 'analytics', blogId);
     const analyticsDoc = await getDoc(analyticsRef);
+    
+    // Also update the blog document views count
+    const blogRef = doc(db, 'blogs', blogId);
 
     if (analyticsDoc.exists()) {
       const updateData: any = {
@@ -35,27 +38,61 @@ export const trackPageView = async (blogId: string, isUnique: boolean = false) =
         updateData.uniqueVisitors = increment(1);
       }
       
-      await updateDoc(analyticsRef, updateData);
+      await Promise.all([
+        updateDoc(analyticsRef, updateData),
+        updateDoc(blogRef, { views: increment(1) })
+      ]);
     } else {
-      await setDoc(analyticsRef, {
-        blogId,
-        views: 1,
-        ctrClicks: 0,
-        uniqueVisitors: isUnique ? 1 : 0,
-        lastViewed: new Date()
-      });
+      await Promise.all([
+        setDoc(analyticsRef, {
+          blogId,
+          views: 1,
+          ctrClicks: 0,
+          uniqueVisitors: isUnique ? 1 : 0,
+          lastViewed: new Date()
+        }),
+        updateDoc(blogRef, { views: increment(1) })
+      ]);
     }
   } catch (error) {
     console.error('Error tracking page view:', error);
   }
 };
 
-export const trackCTRClick = async (blogId: string) => {
+export const trackCTRClick = async (blogId: string, topicId?: string) => {
   try {
     const analyticsRef = doc(db, 'analytics', blogId);
-    await updateDoc(analyticsRef, {
-      ctrClicks: increment(1)
-    });
+    const blogRef = doc(db, 'blogs', blogId);
+    
+    // Update both analytics and blog documents
+    await Promise.all([
+      updateDoc(analyticsRef, {
+        ctrClicks: increment(1)
+      }),
+      updateDoc(blogRef, {
+        ctrClicks: increment(1)
+      })
+    ]);
+    
+    // If topicId is provided, track topic-specific clicks
+    if (topicId) {
+      const topicAnalyticsRef = doc(db, 'topicAnalytics', `${blogId}_${topicId}`);
+      const topicDoc = await getDoc(topicAnalyticsRef);
+      
+      if (topicDoc.exists()) {
+        await updateDoc(topicAnalyticsRef, {
+          clicks: increment(1),
+          lastClicked: new Date()
+        });
+      } else {
+        await setDoc(topicAnalyticsRef, {
+          blogId,
+          topicId,
+          clicks: 1,
+          lastClicked: new Date()
+        });
+      }
+    }
   } catch (error) {
     console.error('Error tracking CTR click:', error);
   }
