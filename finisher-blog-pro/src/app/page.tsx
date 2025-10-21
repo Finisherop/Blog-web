@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import BlogCard from '@/components/BlogCard';
 import Loader from '@/components/Loader';
@@ -61,7 +62,13 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            <button className="neon-button text-lg px-8 py-4">
+            <button 
+              onClick={() => {
+                const blogsSection = document.getElementById('blogs-section');
+                blogsSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="neon-button text-lg px-8 py-4"
+            >
               Explore Blogs
             </button>
           </motion.div>
@@ -69,7 +76,7 @@ export default function Home() {
       </section>
 
       {/* Recent Blogs Section */}
-      <section className="py-20">
+      <section id="blogs-section" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -99,9 +106,9 @@ export default function Home() {
                 <p className="text-gray-300 mb-6">
                   Be the first to create amazing content on Finisher Blog Pro!
                 </p>
-                <button className="neon-button">
+                <Link href="/admin/login" className="neon-button inline-block">
                   Create Your First Blog
-                </button>
+                </Link>
               </div>
             </div>
           )}

@@ -86,14 +86,15 @@ export default function BlogPage() {
       </div>
 
       {/* Header Banner */}
-      <section className="relative h-96 overflow-hidden mt-8">
+      <section className="relative h-[500px] overflow-hidden mt-8 rounded-2xl mx-4 sm:mx-6 lg:mx-8">
         <Image
           src={blog.headerImage}
           alt={blog.title}
           fill
           className="object-cover"
+          priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
         
         <div className="absolute bottom-0 left-0 right-0 p-8">
           <div className="max-w-7xl mx-auto">
@@ -102,14 +103,14 @@ export default function BlogPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
                 {blog.title}
               </h1>
               
-              <div className="flex items-center space-x-6 text-gray-300">
-                <div className="flex items-center space-x-2">
-                  <Calendar size={20} />
-                  <span>
+              <div className="flex flex-wrap items-center gap-6 text-gray-300">
+                <div className="flex items-center space-x-2 bg-black/30 px-4 py-2 rounded-full backdrop-blur-sm">
+                  <Calendar size={18} />
+                  <span className="text-sm font-medium">
                     {new Date(blog.createdAt).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
@@ -118,9 +119,9 @@ export default function BlogPage() {
                   </span>
                 </div>
                 
-                <div className="flex items-center space-x-2">
-                  <Eye size={20} />
-                  <span>{blog.views} views</span>
+                <div className="flex items-center space-x-2 bg-black/30 px-4 py-2 rounded-full backdrop-blur-sm">
+                  <Eye size={18} />
+                  <span className="text-sm font-medium">{blog.views} views</span>
                 </div>
               </div>
             </motion.div>
@@ -129,16 +130,19 @@ export default function BlogPage() {
       </section>
 
       {/* Subheading */}
-      <section className="py-12">
+      <section className="py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.h2
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-2xl md:text-3xl font-bold text-white text-center"
+            className="text-center"
           >
-            {blog.subHeading}
-          </motion.h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4 leading-relaxed">
+              {blog.subHeading}
+            </h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
+          </motion.div>
         </div>
       </section>
 
