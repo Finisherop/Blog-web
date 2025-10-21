@@ -61,6 +61,8 @@ const ImageWithFallback = ({
       className={`${className} ${fill ? 'absolute inset-0 w-full h-full' : ''}`}
       onError={handleError}
       style={fill ? { objectFit: 'cover' } : {}}
+      crossOrigin="anonymous"
+      loading={priority ? 'eager' : 'lazy'}
     />
   );
 };

@@ -185,7 +185,13 @@ const AdminBlogForm = ({
                 src={headerImagePreview}
                 alt="Header preview"
                 className="w-full h-64 object-cover rounded-lg"
-                onError={() => setHeaderImagePreview('')}
+                onError={(e) => {
+                  console.error('Header image preview failed to load:', headerImagePreview);
+                  setHeaderImagePreview('');
+                }}
+                onLoad={() => {
+                  console.log('Header image preview loaded successfully:', headerImagePreview);
+                }}
               />
               <button
                 type="button"
@@ -194,6 +200,10 @@ const AdminBlogForm = ({
               >
                 <X size={16} />
               </button>
+              {/* Debug info */}
+              <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded max-w-xs truncate">
+                {headerImagePreview}
+              </div>
             </div>
           )}
         </div>
