@@ -53,15 +53,15 @@ const TopicBlock = ({ topic, blogId, index }: TopicBlockProps) => {
 
         {/* Topic Content */}
         <div 
-          className="text-gray-200 leading-relaxed mb-8 prose prose-invert prose-lg max-w-none"
+          className="text-gray-200 leading-relaxed mb-8 max-w-none blog-content"
           style={{
             fontSize: '1.125rem',
             lineHeight: '1.8',
-            fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
             color: '#e5e7eb'
           }}
-          dangerouslySetInnerHTML={{ __html: topic.content }}
-        />
+        >
+          {topic.content}
+        </div>
 
         {/* CTR Button */}
         {topic.buttonEnabled && topic.buttonText && topic.buttonLink && (

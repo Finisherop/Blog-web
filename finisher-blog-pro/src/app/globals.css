@@ -126,3 +126,19 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Text content formatting */
+.blog-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-feature-settings: "liga" 1, "kern" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Emoji support */
+.blog-content {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', system-ui, -apple-system, sans-serif;
+}

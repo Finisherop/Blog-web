@@ -152,16 +152,30 @@ const AdminTopicEditor = ({
         </label>
         <textarea
           {...register(`topics.${index}.content`)}
-          rows={6}
+          rows={8}
           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none"
-          placeholder="Enter topic content (HTML supported)"
+          placeholder="Enter your content here... 
+✨ Use emojis, bold text, italics, or any formatting
+📝 Your text will appear exactly as you type it
+🎨 Try different fonts and styles - they'll be preserved!"
+          style={{
+            fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+            lineHeight: '1.6',
+            whiteSpace: 'pre-wrap'
+          }}
         />
         {errors.topics && Array.isArray(errors.topics) && errors.topics[index]?.content && (
           <p className="text-red-400 text-sm mt-1">{errors.topics[index]?.content?.message}</p>
         )}
-        <p className="text-gray-500 text-sm mt-1">
-          You can use HTML tags for formatting (e.g., &lt;b&gt;, &lt;i&gt;, &lt;ul&gt;, &lt;li&gt;)
-        </p>
+        <div className="mt-2 p-3 bg-blue-500/10 border border-blue-400/20 rounded-lg">
+          <p className="text-blue-300 text-sm font-medium mb-1">✨ Text Formatting Tips:</p>
+          <ul className="text-gray-400 text-xs space-y-1">
+            <li>• Type exactly as you want it to appear on your blog</li>
+            <li>• Use emojis 😊, bold text, italics, and different fonts</li>
+            <li>• Line breaks and spacing will be preserved</li>
+            <li>• No HTML needed - just pure text formatting!</li>
+          </ul>
+        </div>
       </div>
 
       {/* CTR Button Settings */}
